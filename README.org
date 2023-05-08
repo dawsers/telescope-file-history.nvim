@@ -1,0 +1,184 @@
+* telescope-file-history.nvim
+
+** Introduction
+
+=telescope-file-history.nvim= is an extension for /Neovim's/
+[[https://github.com/nvim-telescope/telescope.nvim][telescope.nvim]] to
+provide a file history for each file that is edited and saved in Neovim. It can be
+downloaded [[https://github.com/dawsers/telescope-file-history.nvim][here]].
+
+The goal of the extension is to have a history of the changes you make to
+your files, with less granularity than =undo=, which is sometimes too much, but
+more than what you would normally /commit/ to a versioning repository. And it
+also supports files that are not in any project or repo.
+
+The extension uses =git= under the hood to create a local repository of
+files. Every time a file is saved, a =BufWritePost= auto-command creates a
+new snapshot of the file.
+
+There are additional commands to =backup= a certain file with a message
+(=tag=), view and recover the =history= of each file, see what =files= are
+in the repository, navigate to or delete them, and =query= the history of any
+file (or all of them) within a time frame.
+
+If the extension is not flexible enough for a particular need, you can always
+use any =git= management tool to explore the =file_history= backup
+repository.
+
+
+** Requirements
+
+=telescope-file-history.nvim= is an extension, so you need =telescope.nvim= to
+use the plugin fully.
+
+Backups work without /Telescope/, but you will need it for any of the
+commands to manage the repository.
+
+The package also needs [[https://git-scm.com][git]] to create and manage the
+repository of the backups.
+
+If you want to use the action to completely remove a file from the
+repository (=purge=), the extension has an additional dependency,
+[[https://github.com/newren/git-filter-repo][filter-repo]]. =git filter-branch= is
+not reliable and quick enough, so I decided to add this
+dependency. The extension will still work without it, =purge= just won't do
+anything.
+
+
+** Installation and Configuration
+
+Install using [[https://github.com/junegunn/vim-plug][Plug]].
+
+#+BEGIN_SRC vim
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'dawsers/telescope-file-history.nvim'
+#+END_SRC
+
+and setup and configure using /lua/:
+
+#+BEGIN_SRC lua
+-- These are the default values
+require('file_history').setup {
+  -- This is the location where it will create your file history repository
+  backup_dir = "~/.file-history-git",
+  -- command line to execute git
+  git_cmd = "git"
+}
+require('telescope').load_extension('file_history')
+#+END_SRC
+
+
+** Commands
+
+| *Command*                          | *Description*                     |
+|------------------------------------+-----------------------------------|
+| =Telescope file_history backup=    | Backup file (possibly with a tag) |
+| =Telescope file_history history=   | View the file's history           |
+| =Telescope file_history files=     | View every file in the repo       |
+| =Telescope file_history query=     | Query the repo                    |
+
+There are no default mappings for any of the commands.
+
+The extension supports /Telescope's/ multiple selections.
+
+
+*** =backup=
+
+Create a new backup manually. The auto-command takes care of automatic
+backups every time you save a file, but using this command you can add a
+=tag= to the backup so it is easier to recall later.
+
+#+BEGIN_SRC vim
+:Telescope file_history backup tag=This\ is\ a\ tag\ to\ remember
+#+END_SRC
+
+
+*** =history=
+
+Displays the current file's history, with a preview of the differences
+between each version and its current state. Once /Telescope/ opens, you can
+search by date or tag.
+
+#+BEGIN_SRC vim
+:Telescope file_history history
+#+END_SRC
+
+There are several key bindings:
+
+| *Key*                 | *Description*                                   |
+|-----------------------+-------------------------------------------------|
+| =<CR>=                | Open the selected version in a new buffer       |
+| =<C-r>=               | Revert the current buffer to the selected state |
+| =<M-d>=               | Open a full diff in a new tab                   |
+
+*** =files=
+
+Displays all the files in the file history repository, with a preview of
+the current state of the file. You can use this command to explore the backup
+repository, open files, or do some cleanup, removing them from the backup history
+for space or privacy reasons.
+
+#+BEGIN_SRC vim
+:Telescope file_history files
+#+END_SRC
+
+You can open any of the files in a new buffer, delete them from the
+list and repository but keeping the history (=delete=), or completely =purge=
+files from the repository for privacy or space reasons.
+
+This command supports multi-selection.
+
+There are several key bindings:
+
+| *Key*                 | *Description*                                   |
+|-----------------------+-------------------------------------------------|
+| =<CR>=                | Open the selected file in a new buffer          |
+| =<M-d>=               | Delete the selected file from the repo          |
+| =<M-p>=               | Purge the selected file from the repo           |
+
+
+*** =query=
+
+Command to query the file history repository to see what files have been
+modified within a time frame, and use /Telescope/ to search for specific
+versions and recover them if needed. The command accepts two possible
+arguments, =after= and =before=.
+
+#+BEGIN_SRC vim
+" Show all the modifications to every file in the last three hours
+:Telescope file_history query after=3\ hours\ ago
+" Show all the modifications to every file after ... and before ...
+:Telescope file_history query after=2023-05-03\ 02:23:51 before=2023-05-07\ 12:23:11
+#+END_SRC
+
+
+** Key Bindings
+
+There are no default key bindings to call =telescope-file-history.nvim= commands,
+these are an example you may want to use:
+
+#+BEGIN_SRC vim
+" There are no default keyboard bindings, these are an example
+nnoremap <silent> <leader>Bb :Telescope file_history backup tag=
+nnoremap <silent> <leader>Bh :Telescope file_history history<CR>
+nnoremap <silent> <leader>Bf :Telescope file_history files<CR>
+nnoremap <silent> <leader>Bq :Telescope file_history query after=
+#+END_SRC
+
+
+** Highlighting
+
+There are four highlighting groups you can use to customize the look of the
+results: =TelescopeFileHistoryTime=, =TelescopeFileHistoryDate=,
+=TelescopeFileHistoryFile= and =TelescopeFileHistoryTag=. You can assign colors to
+them customizing your /colorscheme/, or in your /Neovim/ configuration.
+
+#+BEGIN_SRC lua
+-- These are the default values for the highlighting groups if you don't
+-- modify them
+vim.api.nvim_set_hl(0, 'TelescopeFileHistoryTime', { link = 'Number' })
+vim.api.nvim_set_hl(0, 'TelescopeFileHistoryDate', { link = 'Function' })
+vim.api.nvim_set_hl(0, 'TelescopeFileHistoryFile', { link = 'Keyword' })
+vim.api.nvim_set_hl(0, 'TelescopeFileHistoryTag', { link = 'Comment' })
+#+END_SRC
+
