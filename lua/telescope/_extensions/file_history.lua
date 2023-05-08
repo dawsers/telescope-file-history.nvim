@@ -131,7 +131,7 @@ local function file_history(opts)
     previewer = preview_file_history(opts, bufnr),
     sorter = conf.file_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
-      actions.select_default:replace(fh_actions.open_selected)
+      actions.select_default:replace(fh_actions.open_selected_hash)
       map('i', '<M-d>', fh_actions.open_diff_tab)
       map('i', '<C-r>', fh_actions.revert_to_selected)
       return true

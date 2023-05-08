@@ -39,17 +39,6 @@ fh_actions.revert_to_selected = function(prompt_bufnr)
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, parent_lines)
 end
 
-fh_actions.open_selected = function(prompt_bufnr)
-  local win, bufnr, entry, parent_lines = prepare_action(prompt_bufnr)
-  local nbufnr = vim.api.nvim_create_buf(true, false)
-  local bufname = entry.fields.hash .. ':' .. vim.api.nvim_buf_get_name(bufnr)
-  vim.api.nvim_buf_set_name(nbufnr, bufname)
-  vim.api.nvim_buf_set_lines(nbufnr, 0, -1, true, parent_lines)
-  -- Set as not modified
-  vim.api.nvim_buf_set_option(nbufnr, 'modified', false)
-  vim.api.nvim_win_set_buf(win, nbufnr)
-end
-
 fh_actions.delete_history = function(prompt_bufnr)
   local picker = actions_state.get_current_picker(prompt_bufnr)
   -- If multi-selection, use those values, otherwise choose the selected entry
