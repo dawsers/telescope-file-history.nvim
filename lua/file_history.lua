@@ -66,7 +66,7 @@ local FileHistory = {
       self:_git_command({ 'init' })
       self:_git_command({ 'config', '--local', 'user.email', 'file-history@noemail.com' })
       self:_git_command({ 'config', '--local', 'user.name', 'file-history' })
-      self:_git_command({ 'config', '--local', 'commit.gpgsign', 'false' })
+      self:_git_command({ 'config', '--local', 'commit.gpgSign', 'false' })
     end
   end,
 
