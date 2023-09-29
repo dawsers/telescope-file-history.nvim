@@ -66,6 +66,7 @@ local FileHistory = {
       self:_git_command({ 'init' })
       self:_git_command({ 'config', '--local', 'user.email', 'file-history@noemail.com' })
       self:_git_command({ 'config', '--local', 'user.name', 'file-history' })
+      self:_git_command({ 'config', '--local', 'commit.gpgSign', 'false' })
     end
   end,
 
@@ -114,7 +115,7 @@ local FileHistory = {
     end
     return proc
   end,
-  
+
   purge_file = function (self, filename)
     -- filename includes hostname
     local backuppath = filename
@@ -123,7 +124,7 @@ local FileHistory = {
     local proc = self:_git_command({ 'filter-repo', '--force', '--invert-paths', '--path', backuppath })
     return proc
   end,
-  
+
   file_history = function (self, dirname, filename)
     -- List all the revisions of a file in the .git repository
     local backuppath = self.basedir .. self.hostname .. dirname .. "/" .. filename
