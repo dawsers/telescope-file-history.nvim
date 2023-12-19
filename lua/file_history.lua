@@ -104,6 +104,11 @@ local FileHistory = {
     return self:_git_command({ 'show', hash .. ':' .. backuppath })
   end,
 
+  get_log = function (self, filename, hash)
+    local backuppath = self.hostname .. filename
+    return self:_git_command({ 'show', hash, '--', backuppath })
+  end,
+
   delete_file = function (self, filename)
     -- filename includes hostname
     local backuppath = filename
@@ -185,6 +190,11 @@ end
 
 M.get_file = function(filename, hash)
   local proc = FileHistory:get_file(filename, hash)
+  return vim.tbl_flatten(proc.stdout)
+end
+
+M.get_log = function(filename, hash)
+  local proc = FileHistory:get_log(filename, hash)
   return vim.tbl_flatten(proc.stdout)
 end
 

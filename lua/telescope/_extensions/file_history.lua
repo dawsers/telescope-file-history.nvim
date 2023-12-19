@@ -25,12 +25,18 @@ local preview_file_history = function(opts, bufnr)
       return entry.value
     end,
     define_preview = function(self, entry, status)
-      local buffer_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
-      local parent_lines = fh.get_file(entry.fields.file, entry.fields.hash)
-      local diff = vim.diff(table.concat(buffer_lines, '\n'), table.concat(parent_lines, '\n'),
-      { result_type = 'unified', ctxlen = 3 })
-      vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, true, split(diff, '\n'))
-      putils.regex_highlighter(self.state.bufnr, "diff")
+      if opts.log then
+        local diff = fh.get_log(entry.fields.file, entry.fields.hash)
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, true, diff)
+        putils.regex_highlighter(self.state.bufnr, "diff")
+      else
+        local buffer_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
+        local parent_lines = fh.get_file(entry.fields.file, entry.fields.hash)
+        local diff = vim.diff(table.concat(buffer_lines, '\n'), table.concat(parent_lines, '\n'),
+        { result_type = 'unified', ctxlen = 3 })
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, true, split(diff, '\n'))
+        putils.regex_highlighter(self.state.bufnr, "diff")
+      end
     end,
   })
 end
@@ -139,6 +145,10 @@ local function file_history(opts)
   }):find()
 end
 
+local function file_history_log(opts)
+  return file_history(vim.tbl_deep_extend("force", opts, { log = true }))
+end
+
 local function file_history_files(opts)
   opts = opts or {}
   local results = fh.file_history_files(opts)
@@ -241,6 +251,7 @@ vim.api.nvim_set_hl(0, 'TelescopeFileHistoryTag', { link = 'Comment' })
 return require("telescope").register_extension({
   exports = {
     history = file_history,
+    log = file_history_log,
     files = file_history_files,
     query = file_history_query,
     backup = file_history_backup

@@ -70,12 +70,13 @@ require('telescope').load_extension('file_history')
 
 ** Commands
 
-| *Command*                          | *Description*                     |
-|------------------------------------+-----------------------------------|
-| =Telescope file_history backup=    | Backup file (possibly with a tag) |
-| =Telescope file_history history=   | View the file's history           |
-| =Telescope file_history files=     | View every file in the repo       |
-| =Telescope file_history query=     | Query the repo                    |
+| *Command*                          | *Description*                         |
+|------------------------------------+---------------------------------------|
+| =Telescope file_history backup=    | Backup file (possibly with a tag)     |
+| =Telescope file_history history=   | View the file's history               |
+| =Telescope file_history log=       | View the file's history incrementally |
+| =Telescope file_history files=     | View every file in the repo           |
+| =Telescope file_history query=     | Query the repo                        |
 
 There are no default mappings for any of the commands.
 
@@ -104,6 +105,30 @@ search by date or tag.
 #+END_SRC
 
 There are several key bindings:
+
+| *Key*                 | *Description*                                   |
+|-----------------------+-------------------------------------------------|
+| =<CR>=                | Open the selected version in a new buffer       |
+| =<C-r>=               | Revert the current buffer to the selected state |
+| =<M-d>=               | Open a full diff in a new tab                   |
+
+*** =log=
+
+This command is equivalent to:
+
+#+BEGIN_SRC vim
+:Telescope file_history history log=true
+#+END_SRC
+
+and displays the current file's history, with a preview of the incremental
+differences created by each file save. Once /Telescope/ opens, you can
+search by date or tag.
+
+#+BEGIN_SRC vim
+:Telescope file_history log
+#+END_SRC
+
+There are several key bindings (same as for the -history= command):
 
 | *Key*                 | *Description*                                   |
 |-----------------------+-------------------------------------------------|
@@ -161,6 +186,7 @@ these are an example you may want to use:
 " There are no default keyboard bindings, these are an example
 nnoremap <silent> <leader>Bb :Telescope file_history backup tag=
 nnoremap <silent> <leader>Bh :Telescope file_history history<CR>
+nnoremap <silent> <leader>Bl :Telescope file_history log<CR>
 nnoremap <silent> <leader>Bf :Telescope file_history files<CR>
 nnoremap <silent> <leader>Bq :Telescope file_history query after=
 #+END_SRC
