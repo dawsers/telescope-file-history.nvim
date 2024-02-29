@@ -18,6 +18,21 @@ local function split(str, sep)
   return result
 end
 
+--- Parse and add syntax highlighting to `bufnr`.
+---
+--- @param number A 0-or-more value indicating the Neovim buffer to add highlighting.
+---
+local function apply_diff_syntax_highlighting(bufnr)
+  local parser = "diff"
+
+  if vim.tbl_contains(require("nvim-treesitter.info").installed_parsers(), parser) then
+    vim.treesitter.start(bufnr, parser)
+  else
+    putils.regex_highlighter(bufnr, "diff")
+  end
+end
+
+
 local preview_file_history = function(opts, bufnr)
   return previewers.new_buffer_previewer({
     title = "File History",
@@ -28,14 +43,14 @@ local preview_file_history = function(opts, bufnr)
       if opts.log then
         local diff = fh.get_log(entry.fields.file, entry.fields.hash)
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, true, diff)
-        putils.regex_highlighter(self.state.bufnr, "diff")
+        apply_diff_syntax_highlighting(self.state.bufnr)
       else
         local buffer_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, true)
         local parent_lines = fh.get_file(entry.fields.file, entry.fields.hash)
         local diff = vim.diff(table.concat(buffer_lines, '\n'), table.concat(parent_lines, '\n'),
         { result_type = 'unified', ctxlen = 3 })
         vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, true, split(diff, '\n'))
-        putils.regex_highlighter(self.state.bufnr, "diff")
+        apply_diff_syntax_highlighting(self.state.bufnr)
       end
     end,
   })

@@ -44,6 +44,10 @@ not reliable and quick enough, so I decided to add this
 dependency. The extension will still work without it, =purge= just won't do
 anything.
 
+If you want tree-sitter highlighting while viewing diffs, make sure to =:TSInstall diff=
+and add [[https://github.com/nvim-treesitter/nvim-treesitter][nvim-treesitter]] as a
+dependency.
+
 
 ** Installation and Configuration
 
