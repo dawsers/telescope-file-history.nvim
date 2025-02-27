@@ -19,10 +19,14 @@ local FileHistory = {
   hostname = '',
   tag = nil,
 
-  init = function (self, basedir, git_cmd)
+  init = function (self, basedir, git_cmd, hostname)
     self.basedir = vim.fn.expand(basedir) .. "/"
     self.git_cmd = git_cmd
-    self.hostname = vim.fn.hostname()
+    if hostname then
+      self.hostname = hostname
+    else
+      self.hostname = vim.fn.hostname()
+    end
   end,
 
   _build_git_command = function (self, args)
@@ -165,6 +169,7 @@ local FileHistory = {
 local defaults = {
   backup_dir = "~/.file-history-git",
   git_cmd = "git",
+  hostname = nil,
 }
 
 M.config = {}
@@ -190,12 +195,12 @@ end
 
 M.get_file = function(filename, hash)
   local proc = FileHistory:get_file(filename, hash)
-  return vim.tbl_flatten(proc.stdout)
+  return vim.iter(proc.stdout):flatten():totable()
 end
 
 M.get_log = function(filename, hash)
   local proc = FileHistory:get_log(filename, hash)
-  return vim.tbl_flatten(proc.stdout)
+  return vim.iter(proc.stdout):flatten():totable()
 end
 
 M.delete_file = function(filename)
@@ -208,7 +213,7 @@ end
 
 M.setup = function (opts)
   M.config = vim.tbl_deep_extend("force", defaults, opts or {})
-  FileHistory:init(M.config.backup_dir, M.config.git_cmd)
+  FileHistory:init(M.config.backup_dir, M.config.git_cmd, M.config.hostname)
 
   vim.api.nvim_create_autocmd({ "BufWritePost" }, {
     group = vim.api.nvim_create_augroup("file_history_group", { clear = true }),
